@@ -52,6 +52,10 @@ def explain_global(
     if isinstance(values, list):
         # Older SHAP returns a list [neg, pos] for binary classifiers
         values = values[1]
+    values = np.asarray(values)
+    if values.ndim == 3:
+        # Newer SHAP on RF binary: shape (n_samples, n_features, n_classes)
+        values = values[..., 1]
     imp = np.abs(values).mean(axis=0)
     order = np.argsort(imp)[::-1]
 
@@ -81,8 +85,13 @@ def explain_instance(model: Any, row: pd.DataFrame) -> list[dict[str, Any]]:
     explainer = shap.TreeExplainer(estimator)
     vals = explainer.shap_values(frame)
     if isinstance(vals, list):
+        # Older SHAP: list [neg, pos] for binary classifiers
         vals = vals[1]
-    arr = np.asarray(vals).reshape(-1)
+    arr = np.asarray(vals)
+    if arr.ndim == 3:
+        # Newer SHAP on RF binary: shape (n_samples, n_features, n_classes) → take positive class
+        arr = arr[..., 1]
+    arr = arr.reshape(-1)
     order = np.argsort(np.abs(arr))[::-1][:5]
     results: list[dict[str, Any]] = []
     raw = row.iloc[0]
