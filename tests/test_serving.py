@@ -9,11 +9,21 @@ from cardio_risk_rf.serving.main import app
 
 def _payload() -> dict:
     return {
-        "male": 1, "age": 58, "education": 3.0,
-        "currentSmoker": 1, "cigsPerDay": 20.0, "BPMeds": 0.0,
-        "prevalentStroke": 0, "prevalentHyp": 1, "diabetes": 0,
-        "totChol": 275.0, "sysBP": 145.0, "diaBP": 95.0,
-        "BMI": 29.4, "heartRate": 78.0, "glucose": 82.0,
+        "male": 1,
+        "age": 58,
+        "education": 3.0,
+        "currentSmoker": 1,
+        "cigsPerDay": 20.0,
+        "BPMeds": 0.0,
+        "prevalentStroke": 0,
+        "prevalentHyp": 1,
+        "diabetes": 0,
+        "totChol": 275.0,
+        "sysBP": 145.0,
+        "diaBP": 95.0,
+        "BMI": 29.4,
+        "heartRate": 78.0,
+        "glucose": 82.0,
     }
 
 

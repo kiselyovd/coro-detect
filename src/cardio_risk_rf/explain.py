@@ -10,13 +10,12 @@ from pathlib import Path
 from typing import Any
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import shap
-
-from .data.framingham import FEATURES
 
 
 def _unwrap(model: Any) -> Any:
@@ -26,13 +25,13 @@ def _unwrap(model: Any) -> Any:
     return model
 
 
-def _extract_tree_and_frame(model: Any, X: pd.DataFrame) -> tuple[Any, pd.DataFrame]:
+def _extract_tree_and_frame(model: Any, x: pd.DataFrame) -> tuple[Any, pd.DataFrame]:
     """Return the fitted estimator + the preprocessor-transformed frame SHAP sees."""
     pipe = _unwrap(model)
     # Feed preprocessor-transformed data to SHAP so feature names align.
-    frame = X.copy()
+    frame = x.copy()
     steps = list(pipe.named_steps.items())
-    for name, step in steps[:-1]:
+    for _name, step in steps[:-1]:
         transformed = step.transform(frame)
         frame = pd.DataFrame(transformed, columns=list(frame.columns), index=frame.index)
     estimator = steps[-1][1]
@@ -41,12 +40,12 @@ def _extract_tree_and_frame(model: Any, X: pd.DataFrame) -> tuple[Any, pd.DataFr
 
 def explain_global(
     model: Any,
-    X: pd.DataFrame,
+    x: pd.DataFrame,
     *,
     out_png: str | Path,
     out_csv: str | Path,
 ) -> dict[str, Any]:
-    estimator, frame = _extract_tree_and_frame(model, X)
+    estimator, frame = _extract_tree_and_frame(model, x)
     explainer = shap.TreeExplainer(estimator)
     values = explainer.shap_values(frame)
     if isinstance(values, list):
@@ -101,7 +100,9 @@ def explain_instance(model: Any, row: pd.DataFrame) -> list[dict[str, Any]]:
         results.append(
             {
                 "feature": feat,
-                "value": None if pd.isna(v_raw) else (float(v_raw) if isinstance(v_raw, (int, float, np.floating)) else v_raw),
+                "value": None
+                if pd.isna(v_raw)
+                else (float(v_raw) if isinstance(v_raw, (int, float, np.floating)) else v_raw),
                 "shap": float(arr[i]),
             }
         )

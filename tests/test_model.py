@@ -1,4 +1,5 @@
 """Model smoke tests (forward pass, output shape)."""
+
 from __future__ import annotations
 
 from cardio_risk_rf.models import build_pipeline

@@ -211,10 +211,7 @@ def main() -> None:
             metrics=metrics,
             out_path=tmp_path / "README.md",
             model_description="Production-grade cardiovascular risk tabular classifier.",
-            github_url=(
-                "https://github.com/"
-                "kiselyovd/cardio-risk-rf"
-            ),
+            github_url=("https://github.com/kiselyovd/cardio-risk-rf"),
             repo_id=args.repo_id,
             base_model=args.base_model,
             library_name=args.library_name,

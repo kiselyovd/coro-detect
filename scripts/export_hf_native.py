@@ -8,11 +8,8 @@ Usage:
         --checkpoint artifacts/checkpoints/best.ckpt \\
         --out artifacts/hf_export \\
 """
+
 from __future__ import annotations
-
-import argparse
-from pathlib import Path
-
 
 
 def main() -> None:
@@ -20,8 +17,6 @@ def main() -> None:
         "Tabular models have no HF native export; upload joblib directly via publish_to_hf. "
         "Place your serialized model at artifacts/model.joblib and run publish_to_hf.py normally."
     )
-
-
 
 
 if __name__ == "__main__":

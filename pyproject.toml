@@ -30,21 +30,19 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-  "pytest>=8.0.0",
-  "pytest-cov>=4.1.0",
-  "ruff>=0.15.10",
-  "mypy>=1.20.1",
-  "pre-commit>=4.0.0",
-  "nbqa>=1.8.0",
-  "nbstripout>=0.9.1",
-  "ipykernel>=6.29.0",
-  "matplotlib>=3.8.0",
-  "deptry>=0.25.1",
-  "bandit[toml]>=1.9.4",
-  "interrogate>=1.7.0",
-  "codespell>=2.4.2",
-  "pytest-asyncio>=1.3.0",
-  "httpx>=0.28.1",
+  "ruff==0.15.10",
+  "mypy==1.20.1",
+  "pytest>=8.3,<9.0",
+  "pytest-cov>=6.0",
+  "pytest-asyncio>=0.24",
+  "httpx>=0.27",
+  "pre-commit==4.*",
+  "deptry==0.25.1",
+  "bandit==1.9.4",
+  "interrogate==1.7.0",
+  "codespell==2.4.2",
+  "pandas-stubs",
+  "types-PyYAML",
 ]
 serving = [
   "fastapi>=0.110.0",
@@ -74,21 +72,36 @@ packages = ["src/cardio_risk_rf"]
 [tool.ruff]
 line-length = 100
 target-version = "py313"
-extend-exclude = ["notebooks"]
+extend-exclude = ["notebooks/*.ipynb", "outputs", "mlruns"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W", "UP", "B", "SIM", "RUF", "N"]
-ignore = ["N812"]
+select = ["E", "F", "I", "N", "UP", "B", "RUF"]
 
 [tool.ruff.lint.per-file-ignores]
-"src/cardio_risk_rf/serving/routes.py" = ["B008"]
+# Tests use ML convention `X` for feature matrices and long reason strings.
+"tests/**" = ["N806", "E501"]
 
 [tool.mypy]
 python_version = "3.13"
-ignore_missing_imports = true
+strict = true
 warn_unused_ignores = true
-warn_redundant_casts = true
-check_untyped_defs = true
+disallow_untyped_defs = true
+[[tool.mypy.overrides]]
+module = ["lightgbm.*", "shap.*", "optuna.*", "sklearn.*", "joblib.*", "matplotlib.*", "kaggle.*"]
+ignore_missing_imports = true
+
+[tool.deptry]
+ignore = ["DEP004"]
+
+[tool.bandit]
+skips = ["B101", "B311"]
+
+[tool.interrogate]
+fail-under = 30
+exclude = ["tests", "notebooks", "outputs", "mlruns", "docs"]
+
+[tool.codespell]
+skip = "uv.lock,*.ipynb,notebooks,outputs,mlruns"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -100,36 +113,3 @@ branch = true
 
 [tool.coverage.report]
 exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]
-
-[tool.bandit]
-exclude_dirs = ["tests", "notebooks", "data", "artifacts"]
-# B101: assert_used (pytest convention)
-# B614: pytorch_load — we load only our own trained checkpoints
-# B615: huggingface_unsafe_download — we download only our own / trusted HF repos
-# B701: jinja2_autoescape_false — templates render Markdown/YAML, not HTML
-skips = ["B101", "B614", "B615", "B701"]
-
-[tool.interrogate]
-ignore-init-method = true
-ignore-init-module = true
-ignore-magic = true
-ignore-private = false
-ignore-nested-functions = true
-ignore-module = false
-fail-under = 50
-exclude = ["tests", "notebooks", "docs", "build", "setup.py"]
-verbose = 1
-color = true
-
-[tool.deptry]
-extend_exclude = ["notebooks", "tests"]
-known_first_party = ["cardio_risk_rf"]
-# DEP004: dependency-groups (serving, tracking, docs) are intentional optional installs
-ignore = ["DEP004"]
-
-[tool.deptry.per_rule_ignores]
-DEP002 = ["nbstripout", "ipykernel", "pyyaml", "rich"]
-
-[tool.codespell]
-skip = "uv.lock,*.ipynb,*.lock,data/*"
-ignore-words-list = "te,nd,fo"

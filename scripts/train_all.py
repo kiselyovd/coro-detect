@@ -34,20 +34,25 @@ def main() -> None:
 
     _log("=== LightGBM main (Optuna 50) ===")
     main_ckpt = train_main(
-        train_df=train_df, val_df=val_df,
+        train_df=train_df,
+        val_df=val_df,
         out_path=artifacts / "main" / "cardio_risk_lgbm.joblib",
-        optuna_trials=50, seed=42,
+        optuna_trials=50,
+        seed=42,
     )
 
     _log("=== RandomForest baseline (Grid 5-fold) ===")
     base_ckpt = train_baseline(
-        train_df=train_df, val_df=val_df,
+        train_df=train_df,
+        val_df=val_df,
         out_path=artifacts / "baseline" / "cardio_risk_rf.joblib",
-        cv_folds=5, seed=42,
+        cv_folds=5,
+        seed=42,
     )
 
     _log("=== Scoring main on test ===")
     import joblib as _jl
+
     main_bundle = _jl.load(main_ckpt)
     main_model = main_bundle["model"] if isinstance(main_bundle, dict) else main_bundle
     probs_main = main_model.predict_proba(test_df[FEATURES])[:, 1]
@@ -61,20 +66,25 @@ def main() -> None:
     base_model = base_bundle["model"] if isinstance(base_bundle, dict) else base_bundle
     probs_base = base_model.predict_proba(test_df[FEATURES])[:, 1]
     m_base = compute_metrics(test_df[TARGET].to_numpy(), probs_base, threshold=0.5)
-    Path(reports / "metrics_baseline.json").write_text(json.dumps(m_base, indent=2), encoding="utf-8")
+    Path(reports / "metrics_baseline.json").write_text(
+        json.dumps(m_base, indent=2), encoding="utf-8"
+    )
     _log(f"baseline metrics: {m_base}")
 
     _log("=== Calibration plot on val ===")
     probs_val = main_model.predict_proba(val_df[FEATURES])[:, 1]
     save_calibration_plot(
-        val_df[TARGET].to_numpy(), probs_val,
-        reports / "calibration.png", bins=10,
+        val_df[TARGET].to_numpy(),
+        probs_val,
+        reports / "calibration.png",
+        bins=10,
         title="LightGBM calibration (val)",
     )
 
     _log("=== Global SHAP ===")
     explain_global(
-        main_model, val_df[FEATURES],
+        main_model,
+        val_df[FEATURES],
         out_png=reports / "shap_summary.png",
         out_csv=reports / "shap_importance.csv",
     )

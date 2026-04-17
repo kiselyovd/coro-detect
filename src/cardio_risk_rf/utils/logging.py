@@ -1,15 +1,18 @@
 """Structured logging configuration."""
+
 from __future__ import annotations
 
 import logging
 import sys
+from typing import Any
 
 import structlog
 
 
 def configure_logging(level: str = "INFO", json_output: bool = False) -> None:
+    """Initialise stdlib + structlog with JSON or console rendering."""
     logging.basicConfig(format="%(message)s", stream=sys.stdout, level=level.upper())
-    processors: list = [
+    processors: list[Any] = [
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
@@ -29,4 +32,6 @@ def configure_logging(level: str = "INFO", json_output: bool = False) -> None:
 
 
 def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(name)
+    """Return a structlog bound logger; call after `configure_logging`."""
+    logger: structlog.stdlib.BoundLogger = structlog.get_logger(name)
+    return logger

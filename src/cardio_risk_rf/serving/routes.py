@@ -61,7 +61,7 @@ def predict(
     top5 = explain_instance(pipe, row)
     return PredictionResponse(
         probability=prob,
-        cls=cls,
+        cls=cls,  # type: ignore[call-arg]  # populated via alias="class"; revisit in backport
         threshold=threshold,
         shap_top5=top5,  # type: ignore[arg-type]
         model_version=_MODEL_VERSION,

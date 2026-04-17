@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any
 
 import joblib
-import numpy as np
 import optuna
 import pandas as pd
 from lightgbm import early_stopping
@@ -40,8 +39,8 @@ def train_main(
     optuna_trials: int = 50,
     seed: int = 42,
 ) -> Path:
-    X_train, y_train = _xy(train_df)
-    X_val, y_val = _xy(val_df)
+    X_train, y_train = _xy(train_df)  # noqa: N806 — ML convention for feature matrix
+    X_val, y_val = _xy(val_df)  # noqa: N806 — ML convention for feature matrix
     spw = _scale_pos_weight(y_train)
     log.info("lgbm_scale_pos_weight", value=spw)
 
@@ -59,7 +58,8 @@ def train_main(
         }
         pipe = build_main(scale_pos_weight=spw, random_state=seed, **params)
         pipe.fit(
-            X_train, y_train,
+            X_train,
+            y_train,
             clf__eval_set=[(X_val, y_val)],
             clf__eval_metric="average_precision",
             clf__callbacks=[early_stopping(stopping_rounds=50, verbose=False)],
@@ -76,13 +76,16 @@ def train_main(
     final_params["n_estimators"] = 2000
     model = build_main(scale_pos_weight=spw, random_state=seed, **final_params)
     model.fit(
-        X_train, y_train,
+        X_train,
+        y_train,
         clf__eval_set=[(X_val, y_val)],
         clf__eval_metric="average_precision",
         clf__callbacks=[early_stopping(stopping_rounds=50, verbose=False)],
     )
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    joblib.dump({"model": model, "best_params": final_params, "cv_pr_auc": study.best_value}, out_path)
+    joblib.dump(
+        {"model": model, "best_params": final_params, "cv_pr_auc": study.best_value}, out_path
+    )
     return out_path
 
 
@@ -94,7 +97,7 @@ def train_baseline(
     cv_folds: int = 5,
     seed: int = 42,
 ) -> Path:
-    X_train, y_train = _xy(train_df)
+    X_train, y_train = _xy(train_df)  # noqa: N806 — ML convention for feature matrix
 
     base = build_baseline(random_state=seed)
     grid = {
@@ -111,7 +114,11 @@ def train_baseline(
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(
-        {"model": search.best_estimator_, "best_params": search.best_params_, "cv_pr_auc": search.best_score_},
+        {
+            "model": search.best_estimator_,
+            "best_params": search.best_params_,
+            "cv_pr_auc": search.best_score_,
+        },
         out_path,
     )
     return out_path

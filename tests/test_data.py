@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from cardio_risk_rf.data.framingham import FEATURES, TARGET, load_framingham, split_stratified
 
@@ -36,7 +36,7 @@ def test_load_framingham_returns_expected_columns(tmp_path) -> None:
     path = tmp_path / "framingham.csv"
     df.to_csv(path, index=False)
     loaded = load_framingham(path)
-    assert list(loaded.columns) == FEATURES + [TARGET]
+    assert list(loaded.columns) == [*FEATURES, TARGET]
     assert len(loaded) == 100
     assert loaded[TARGET].dtype == np.int64 or loaded[TARGET].dtype == np.int32
 

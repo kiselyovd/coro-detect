@@ -9,8 +9,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from cardio_risk_rf.data.framingham import FEATURES, TARGET
-from cardio_risk_rf.models.factory import build_baseline, build_main
-from cardio_risk_rf.training.train import train_main, train_baseline
+from cardio_risk_rf.training.train import train_baseline, train_main
 
 
 def _toy_split(n: int = 300, seed: int = 0):

@@ -1,8 +1,10 @@
 """Dependency injection — singleton model loader."""
+
 from __future__ import annotations
 
 import os
 from functools import lru_cache
+from typing import Any
 
 from ..inference.predict import load_model
 from ..utils import get_logger
@@ -11,7 +13,8 @@ log = get_logger(__name__)
 
 
 @lru_cache(maxsize=1)
-def get_model():
+def get_model() -> Any:
+    """Singleton-load the checkpoint from `MODEL_PATH`."""
     ckpt = os.environ.get("MODEL_PATH")
     if not ckpt:
         raise RuntimeError("MODEL_PATH env var not set")

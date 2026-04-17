@@ -1,4 +1,5 @@
 """CLI entrypoint: python -m cardio_risk_rf"""
+
 from __future__ import annotations
 
 import sys

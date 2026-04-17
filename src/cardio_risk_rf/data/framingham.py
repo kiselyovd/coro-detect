@@ -39,7 +39,7 @@ def load_framingham(csv_path: str | Path) -> pd.DataFrame:
     missing = {TARGET, *FEATURES} - set(df.columns)
     if missing:
         raise ValueError(f"Framingham CSV missing columns: {sorted(missing)}")
-    df = df[FEATURES + [TARGET]].copy()
+    df = df[[*FEATURES, TARGET]].copy()
     df[TARGET] = df[TARGET].astype("int64")
     return df
 
@@ -70,4 +70,8 @@ def split_stratified(
         stratify=rest[TARGET],
         random_state=seed,
     )
-    return train_df.reset_index(drop=True), val_df.reset_index(drop=True), test_df.reset_index(drop=True)
+    return (
+        train_df.reset_index(drop=True),
+        val_df.reset_index(drop=True),
+        test_df.reset_index(drop=True),
+    )

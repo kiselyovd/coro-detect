@@ -9,7 +9,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
-__all__ = ["build_main", "build_baseline"]
+__all__ = ["build_baseline", "build_main"]
 
 
 def build_main(

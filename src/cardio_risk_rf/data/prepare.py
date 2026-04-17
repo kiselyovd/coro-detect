@@ -23,9 +23,7 @@ def main() -> None:
     train_df.to_parquet(out / "train.parquet", index=False)
     val_df.to_parquet(out / "val.parquet", index=False)
     test_df.to_parquet(out / "test.parquet", index=False)
-    print(
-        f"wrote train={len(train_df)} val={len(val_df)} test={len(test_df)} to {out}"
-    )
+    print(f"wrote train={len(train_df)} val={len(val_df)} test={len(test_df)} to {out}")
 
 
 if __name__ == "__main__":
