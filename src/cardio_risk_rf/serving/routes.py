@@ -53,7 +53,7 @@ def predict(
     if all(v is None for v in raw.values()):
         raise HTTPException(status_code=422, detail="All features null; cannot score.")
 
-    row = pd.DataFrame([{f: raw.get(f) for f in FEATURES}])
+    row = pd.DataFrame([{f: raw.get(f) for f in FEATURES}]).astype(float)
     pipe = _load(model)
     prob = float(pipe.predict_proba(row)[0, 1])
     threshold = float(os.environ.get("CARDIO_THRESHOLD", "0.5"))

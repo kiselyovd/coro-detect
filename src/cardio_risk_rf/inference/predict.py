@@ -23,7 +23,7 @@ def predict(model: Any, features: dict[str, Any]) -> dict[str, Any]:
     """Run inference on a single feature mapping and return pred + class probabilities."""
     import pandas as pd
 
-    x = pd.DataFrame([features])
+    x = pd.DataFrame([features]).astype(float)
     proba = model.predict_proba(x)[0].tolist()
     pred = int(model.predict(x)[0])
     return {"pred": pred, "proba": proba}
