@@ -15,10 +15,10 @@ if [[ -s "${TARGET}" ]]; then
   exit 0
 fi
 
-if command -v kaggle >/dev/null 2>&1 && [[ -f "${HOME}/.kaggle/kaggle.json" ]]; then
+if command -v kaggle >/dev/null 2>&1 && { [[ -f "${HOME}/.kaggle/kaggle.json" ]] || [[ -n "${KAGGLE_USERNAME:-}" && -n "${KAGGLE_KEY:-}" ]] || [[ -n "${KAGGLE_API_TOKEN:-}" ]]; }; then
   echo "[sync_data] Trying Kaggle..."
   tmp="$(mktemp -d)"
-  kaggle datasets download -d neisha/heart-disease-prediction-using-logistic-regression -p "${tmp}" --unzip
+  kaggle datasets download -d aasheesh200/framingham-heart-study-dataset -p "${tmp}" --unzip
   mv "${tmp}/framingham.csv" "${TARGET}"
   rm -rf "${tmp}"
   echo "[sync_data] Downloaded via Kaggle."

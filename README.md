@@ -14,7 +14,7 @@ Production-grade tabular cardiovascular-risk classifier on the Framingham Heart 
 
 ## Dataset
 
-[Framingham Heart Study 10-Year CHD Risk](https://www.kaggle.com/datasets/neisha/heart-disease-prediction-using-logistic-regression) (CC-BY-4.0). 4240 rows × 16 features, ~15% positive rate on `TenYearCHD`. Fetched by `scripts/sync_data.sh` from Kaggle with an HF Datasets fallback mirror. Split 70/15/15 stratified by target (`train=2968, val=636, test=636`).
+[Framingham Heart Study 10-Year CHD Risk](https://www.kaggle.com/datasets/aasheesh200/framingham-heart-study-dataset). 4240 rows × 16 features, ~15% positive rate on `TenYearCHD`. Fetched by `scripts/sync_data.sh` from Kaggle with an HF Datasets fallback mirror. Split 70/15/15 stratified by target (`train=2967, val=636, test=637`).
 
 The original 49-row dataset from the `coro-detect` author is archived at `docs/legacy/original_dataset.csv` — see `docs/legacy/README.md` for rationale.
 
@@ -22,16 +22,16 @@ The original 49-row dataset from the `coro-detect` author is archived at `docs/l
 
 Filled in from `reports/metrics_summary.json` once the v0.1.0 run completes.
 
-| Model | ROC-AUC | PR-AUC | F1 | Brier |
-|---|---|---|---|---|
-| **LightGBM** (main) | — | — | — | — |
-| RandomForest (baseline) | — | — | — | — |
+| Model | ROC-AUC | PR-AUC | F1 @ t\* | Brier | t\* |
+|---|---|---|---|---|---|
+| **LightGBM** (main) | **66.2%** | 26.6% | 30.6% | 0.128 | 0.27 |
+| RandomForest (baseline) | 66.0% | **27.5%** | **32.2%** | 0.135 | 0.25 |
 
-Metrics computed on held-out test split (n≈636). Calibration plot on val → `reports/calibration.png`.
+Metrics on held-out test split (n=637, positive rate 15.2%, Framingham 10-year CHD). F1 reported at the validation-set optimal threshold t\* (defaults to 0.5 = class-prior-driven and yields F1≈0 for both models on imbalanced data). Calibration plot on val → `reports/calibration.png`; F1-optimal thresholds saved to `reports/metrics_thresholded.json`.
 
 ### Global SHAP (main model)
 
-![SHAP summary](reports/shap_summary.png)
+![SHAP summary](docs/images/shap_summary.png)
 
 ## Quick Start
 

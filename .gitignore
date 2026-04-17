@@ -25,3 +25,4 @@ data/processed/*
 !data/processed/.gitignore
 .env
 .env.local
+reports/
