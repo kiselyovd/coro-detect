@@ -1,72 +1,60 @@
 ---
 license: mit
-library_name: {{ library_name }}
-
-pipeline_tag: {{ pipeline_tag }}
-
-{% if base_model %}base_model: {{ base_model }}
-{% endif %}tags:
-{% for tag in tags %}  - {{ tag }}
-{% endfor %}datasets:
-{% for ds in datasets %}  - {{ ds }}
-{% endfor %}
-metrics:
-  - accuracy
-  - f1
-  - roc_auc
-
-{% if widget_examples %}widget:
-{% for ex in widget_examples %}  - src: {{ ex.src }}
-    example_title: {{ ex.example_title }}
-{% endfor %}{% endif %}
-
+library_name: sklearn
+pipeline_tag: tabular-classification
+tags:
+- lightgbm
+- random-forest
+- shap
+- cardiovascular
+- tabular
+- framingham
+datasets:
+- framingham-heart-study
+base_model: scikit-learn
+widget:
+- text: null
+  example_title: Sample patient
+  example_input: {{ widget_payload }}
 model-index:
-  - name: {{ repo_id }}
-    results:
-{% for task_result in metric_results %}      - task:
-          type: {{ task_result.task_type }}
-        dataset:
-          type: {{ task_result.dataset_type }}
-          name: {{ task_result.dataset_name }}
-        metrics:
-{% for m in task_result.metrics %}          - type: {{ m.type }}
-            value: {{ m.value }}
-{% endfor %}{% endfor %}
----
+- name: {{ repo_id }}
+  results:
+  - task:
+      type: tabular-classification
+      name: 10-year CHD risk
+    dataset:
+      type: framingham-heart-study
+      name: Framingham Heart Study
+    metrics:
+{% for m in main_metrics %}    - type: {{ m.type }}
+      value: {{ m.value }}
+{% endfor %}---
 
 # cardio-risk-rf
 
-{{ model_description }}
+Production-grade tabular cardiovascular-risk classifier on the Framingham Heart Study (4240 patients, 10-year CHD). Main artefact is `cardio_risk_lgbm.joblib` (LightGBM + SHAP); baseline `cardio_risk_rf.joblib` (RandomForest + median imputer).
 
-## Metrics
+## Metrics (held-out test, n={{ test_size }})
 
 {{ metrics_table }}
 
 ## Usage
 
-
 ```python
-import joblib
-import pandas as pd
+from huggingface_hub import hf_hub_download
+import joblib, pandas as pd
 
-model = joblib.load("model.joblib")
-df = pd.read_csv("your_data.csv")
-predictions = model.predict(df)
+path = hf_hub_download(repo_id="{{ repo_id }}", filename="cardio_risk_lgbm.joblib")
+model = joblib.load(path)
+x = pd.DataFrame([{{ widget_payload }}])
+print(model.predict_proba(x))
 ```
 
+## Feature order (16)
 
-## Training Data
+`male, age, education, currentSmoker, cigsPerDay, BPMeds, prevalentStroke, prevalentHyp, diabetes, totChol, sysBP, diaBP, BMI, heartRate, glucose`.
+Any field may be `null`; LightGBM handles NaN natively, RandomForest pipeline imputes with the training-set median.
 
-{% if hf_dataset %}Trained on [{{ dataset_name or hf_dataset }}](https://huggingface.co/datasets/{{ hf_dataset }}).
-{% else %}Training dataset details not specified.
-{% endif %}
+## Intended use
 
-## Source Code
-
-[GitHub Repository]({{ github_url }})
-
-## Intended Use
-
-This model is provided for research and educational purposes. The authors make no warranties about its suitability for any particular application. Users are responsible for evaluating the model's fitness for their use case, including fairness, safety, and compliance with applicable regulations.
-
-> **Note:** This model card was generated from the [ml-project-template](https://github.com/kiselyovd/ml-project-template) scaffold.
+Educational artifact. Not a medical device. Do not use for clinical decisions.

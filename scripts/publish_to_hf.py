@@ -1,98 +1,98 @@
-"""Upload trained artifacts to HuggingFace Hub."""
+"""Upload trained artifacts to HuggingFace Hub.
+
+Adapted from the M2 brain-mri-segmentation template for the M4
+cardio-risk-rf tabular classifier. Uploads the LightGBM main artefact
+and the RandomForest baseline, renders a Jinja2 model card from
+``docs/model_card.md.j2``, and pushes to the HF Hub via ``HfApi``.
+
+Supports ``--dry-run`` to render the model card locally without
+touching HuggingFace.
+"""
 
 from __future__ import annotations
 
 import argparse
 import json
 import os
-import shutil
 import tempfile
 from pathlib import Path
 
 from huggingface_hub import HfApi
 from jinja2 import Environment, FileSystemLoader
 
+# Filenames shipped to the Hub. Main + baseline artefact.
+MODEL_FILES: tuple[str, ...] = ("cardio_risk_lgbm.joblib", "cardio_risk_rf.joblib")
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 
-def _format_metrics(metrics: dict) -> str:
-    if not metrics:
+def _format_metrics_table(summary: dict) -> str:
+    """Render a Markdown table from the evaluation summary JSON.
+
+    Falls back to ``TBD`` when the summary is empty (Task 18 will
+    populate ``reports/metrics_summary.json``).
+    """
+    if not summary:
         return "TBD"
-    scalar = {k: v for k, v in metrics.items() if isinstance(v, (int, float, str))}
+    scalar = {k: v for k, v in summary.items() if isinstance(v, (int, float, str))}
     if not scalar:
         return "TBD"
     rows = [f"| {k} | {v} |" for k, v in scalar.items()]
     return "| Metric | Value |\n|---|---|\n" + "\n".join(rows)
 
 
-def _build_tags(domain_tag: str, extra_csv: str, library_name: str) -> list[str]:
-    """Combine domain tag, library name, comma-separated extras into a sorted unique list."""
-    tags: set[str] = set()
-    if domain_tag:
-        tags.add(domain_tag)
-    if library_name:
-        tags.add(library_name)
-    if extra_csv:
-        for t in extra_csv.split(","):
-            t = t.strip()
-            if t:
-                tags.add(t)
-    if library_name == "transformers":
-        tags.add("pytorch")
-    return sorted(tags)
+def _main_metrics_from(summary: dict) -> list[dict]:
+    """Build the ``model-index`` metrics entries from the summary.
 
-
-def _metric_results_from(
-    metrics_json_path: str,
-    pipeline_tag: str,
-    dataset_name: str,
-    dataset_type: str,
-) -> list[dict]:
-    """Read metrics.json and return model-index metric_results structure."""
-    path = Path(metrics_json_path)
-    if not path.exists():
+    Returns an empty list when metrics are unavailable so the Jinja2
+    ``{% for m in main_metrics %}`` loop simply emits nothing. The
+    plan prefers an empty loop over placeholder numbers.
+    """
+    if not summary:
         return []
-    try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return []
-    numeric = [{"type": k, "value": v} for k, v in raw.items() if isinstance(v, (int, float))]
-    if not numeric:
-        return []
-    task_type_map = {
-        "image-segmentation": "image-segmentation",
-        "image-classification": "image-classification",
-        "text-classification": "text-classification",
-        "tabular-classification": "tabular-classification",
+    mapping = {
+        "main_roc_auc": "roc_auc",
+        "main_pr_auc": "pr_auc",
+        "main_f1": "f1",
+        "main_brier": "brier",
     }
-    task_type = task_type_map.get(pipeline_tag, pipeline_tag or "other")
-    return [
-        {
-            "task_type": task_type,
-            "dataset_type": dataset_type or "unknown",
-            "dataset_name": dataset_name or "unknown",
-            "metrics": numeric,
-        }
-    ]
+    out: list[dict] = []
+    for key, metric_type in mapping.items():
+        if key in summary:
+            out.append({"type": metric_type, "value": summary[key]})
+    return out
+
+
+def _widget_payload(widget_path: Path) -> str:
+    """Load the sample-patient JSON and return a compact inline literal."""
+    if not widget_path.exists():
+        return "{}"
+    data = json.loads(widget_path.read_text(encoding="utf-8"))
+    return json.dumps(data, separators=(", ", ": "))
 
 
 def render_model_card(
     template_path: Path,
-    metrics: dict,
     out_path: Path,
-    **extra,
+    **context,
 ) -> None:
-    env = Environment(
+    """Render the Jinja2 model-card template to disk.
+
+    ``autoescape`` is deliberately left at its default (``False``)
+    because the template produces Markdown + YAML frontmatter, not
+    HTML; HTML-escaping would mangle Markdown table pipes and YAML
+    braces. Bandit's B701 warning is suppressed with a targeted
+    ``# nosec`` for the same reason.
+    """
+    env = Environment(  # nosec B701 - renders Markdown/YAML, not HTML
         loader=FileSystemLoader(str(template_path.parent)),
+        autoescape=False,
         keep_trailing_newline=True,
     )
     tpl = env.get_template(template_path.name)
-    out_path.write_text(
-        tpl.render(metrics_table=_format_metrics(metrics), **extra),
-        encoding="utf-8",
-    )
+    out_path.write_text(tpl.render(**context), encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -101,132 +101,81 @@ def render_model_card(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Publish trained artifacts to HuggingFace Hub.")
+    parser = argparse.ArgumentParser(
+        description="Publish cardio-risk-rf artifacts to HuggingFace Hub.",
+    )
     parser.add_argument("--repo-id", default="kiselyovd/cardio-risk-rf")
     parser.add_argument("--artifacts", default="artifacts")
-    parser.add_argument("--metrics", default="reports/metrics.json")
+    parser.add_argument("--metrics", default="reports/metrics_summary.json")
     parser.add_argument("--template", default="docs/model_card.md.j2")
+    parser.add_argument("--widget-payload", default="data/widget/sample_patient.json")
     parser.add_argument("--tag", default=None)
     parser.add_argument(
-        "--widget-sources",
-        default=None,
-        metavar="DIR",
-        help="Directory of widget PNG examples to upload to samples/ in HF repo.",
+        "--dry-run",
+        action="store_true",
+        help="Render model card to a local file without uploading to HuggingFace.",
     )
     parser.add_argument(
-        "--base-model",
-        default="",
-        help="HF base model ID (e.g. nvidia/segformer-b2-...).",
-    )
-    parser.add_argument(
-        "--hf-dataset",
-        default="",
-        help="HF dataset ID (e.g. user/my-dataset).",
-    )
-    parser.add_argument(
-        "--dataset-name",
-        default="",
-        help="Human-readable dataset name (defaults to --hf-dataset).",
-    )
-    parser.add_argument(
-        "--domain-tag",
-        default="",
-        help="Domain tag (e.g. medical, biology).",
-    )
-    parser.add_argument(
-        "--pipeline-tag",
-        default="",
-        help="HF pipeline tag (e.g. image-segmentation).",
-    )
-    parser.add_argument(
-        "--library-name",
-        default="transformers",
-        help="Library name pill on HF (default: transformers).",
-    )
-    parser.add_argument(
-        "--tags",
-        default="",
-        help="Comma-separated extra tags.",
-    )
-    parser.add_argument(
-        "--hf-export",
-        default="artifacts/hf_export",
-        metavar="DIR",
-        help="Directory produced by export_hf_native.py; contents copied to HF repo root.",
+        "--dry-run-out",
+        default="artifacts/model_card_preview.md",
+        help="Destination for --dry-run rendered card.",
     )
     args = parser.parse_args()
 
     artifacts_dir = Path(args.artifacts)
-    if not artifacts_dir.exists():
-        raise SystemExit(f"Artifacts dir not found: {artifacts_dir}")
-
-    metrics: dict = {}
+    summary: dict = {}
     metrics_path = Path(args.metrics)
     if metrics_path.exists():
-        metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+        summary = json.loads(metrics_path.read_text(encoding="utf-8"))
 
-    widget_examples: list[dict] = []
-    if args.widget_sources:
-        widget_dir = Path(args.widget_sources)
-        if widget_dir.is_dir():
-            widget_examples = [
-                {
-                    "src": f"https://huggingface.co/{args.repo_id}/resolve/main/samples/{p.name}",
-                    "example_title": p.stem,
-                }
-                for p in sorted(widget_dir.glob("*.png"))
-            ]
+    widget_payload = _widget_payload(Path(args.widget_payload))
+    test_size = summary.get("test_size", "TBD")
+    template_ctx = {
+        "repo_id": args.repo_id,
+        "widget_payload": widget_payload,
+        "main_metrics": _main_metrics_from(summary),
+        "test_size": test_size,
+        "metrics_table": _format_metrics_table(summary),
+    }
 
-    dataset_name = args.dataset_name or args.hf_dataset
+    if args.dry_run:
+        out_path = Path(args.dry_run_out)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        render_model_card(
+            template_path=Path(args.template),
+            out_path=out_path,
+            **template_ctx,
+        )
+        print(f"[dry-run] Rendered model card to: {out_path}")
+        print("[dry-run] Preview (first 40 lines):")
+        preview_lines = out_path.read_text(encoding="utf-8").splitlines()[:40]
+        for line in preview_lines:
+            print(f"  {line}")
+        print("[dry-run] No upload performed.")
+        return
+
+    if not artifacts_dir.exists():
+        raise SystemExit(f"Artifacts dir not found: {artifacts_dir}")
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
 
+        # Flatten the per-model artifact layout: copy only the joblib
+        # files listed in MODEL_FILES from anywhere under artifacts/.
+        found: set[str] = set()
         for item in artifacts_dir.rglob("*"):
-            if item.is_file():
-                rel = item.relative_to(artifacts_dir)
-                dest = tmp_path / rel
-                dest.parent.mkdir(parents=True, exist_ok=True)
+            if item.is_file() and item.name in MODEL_FILES:
+                dest = tmp_path / item.name
                 dest.write_bytes(item.read_bytes())
-
-        hf_export_dir = Path(args.hf_export)
-        if hf_export_dir.is_dir():
-            for item in hf_export_dir.rglob("*"):
-                if item.is_file():
-                    rel = item.relative_to(hf_export_dir)
-                    dest = tmp_path / rel
-                    dest.parent.mkdir(parents=True, exist_ok=True)
-                    dest.write_bytes(item.read_bytes())
-
-        if args.widget_sources:
-            widget_dir = Path(args.widget_sources)
-            if widget_dir.is_dir():
-                samples_dest = tmp_path / "samples"
-                samples_dest.mkdir(parents=True, exist_ok=True)
-                for png in sorted(widget_dir.glob("*.png")):
-                    shutil.copy2(png, samples_dest / png.name)
+                found.add(item.name)
+        missing = set(MODEL_FILES) - found
+        if missing:
+            raise SystemExit(f"Missing expected artifacts: {sorted(missing)}")
 
         render_model_card(
             template_path=Path(args.template),
-            metrics=metrics,
             out_path=tmp_path / "README.md",
-            model_description="Production-grade cardiovascular risk tabular classifier.",
-            github_url=("https://github.com/kiselyovd/cardio-risk-rf"),
-            repo_id=args.repo_id,
-            base_model=args.base_model,
-            library_name=args.library_name,
-            pipeline_tag=args.pipeline_tag,
-            tags=_build_tags(args.domain_tag, args.tags, args.library_name),
-            datasets=[args.hf_dataset] if args.hf_dataset else [],
-            dataset_name=dataset_name,
-            hf_dataset=args.hf_dataset,
-            widget_examples=widget_examples,
-            metric_results=_metric_results_from(
-                args.metrics,
-                args.pipeline_tag,
-                dataset_name,
-                args.hf_dataset,
-            ),
+            **template_ctx,
         )
 
         api = HfApi(token=os.environ.get("HF_TOKEN"))
