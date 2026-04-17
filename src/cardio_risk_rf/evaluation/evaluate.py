@@ -1,27 +1,34 @@
-"""Evaluation CLI — runs model on test set, writes reports/metrics.json."""
+"""CLI: score a trained model on a Parquet split."""
+
 from __future__ import annotations
 
 import argparse
 import json
 from pathlib import Path
 
-from ..utils import configure_logging, get_logger
+import joblib
+import pandas as pd
 
-log = get_logger(__name__)
+from ..data.framingham import FEATURES, TARGET
+from .metrics import compute_metrics
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--checkpoint", required=True)
-    parser.add_argument("--data", required=True)
-    parser.add_argument("--out", default="reports/metrics.json")
-    args = parser.parse_args()
-    configure_logging()
-    log.info("evaluate.start", checkpoint=args.checkpoint, data=args.data)
-    metrics: dict = {"note": "override evaluate.py per project"}
+    p = argparse.ArgumentParser()
+    p.add_argument("--model", required=True)
+    p.add_argument("--split", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--threshold", type=float, default=0.5)
+    args = p.parse_args()
+
+    bundle = joblib.load(args.model)
+    model = bundle["model"] if isinstance(bundle, dict) and "model" in bundle else bundle
+    df = pd.read_parquet(args.split)
+    probs = model.predict_proba(df[FEATURES])[:, 1]
+    m = compute_metrics(df[TARGET].to_numpy(), probs, threshold=args.threshold)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.out).write_text(json.dumps(metrics, indent=2))
-    log.info("evaluate.done", out=args.out)
+    Path(args.out).write_text(json.dumps(m, indent=2), encoding="utf-8")
+    print(json.dumps(m, indent=2))
 
 
 if __name__ == "__main__":
