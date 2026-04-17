@@ -1,0 +1,21 @@
+stages:
+  prepare:
+    cmd: python -m cardio_risk_rf.data.prepare --raw data/raw --out data/processed
+    deps:
+      - data/raw
+      - src/cardio_risk_rf/data/prepare.py
+    outs:
+      - data/processed
+  train:
+    cmd: python -m cardio_risk_rf.training.train
+    deps:
+      - data/processed
+      - src/cardio_risk_rf
+      - configs
+    params:
+      - params.yaml:
+    outs:
+      - artifacts/checkpoints
+    metrics:
+      - reports/metrics.json:
+          cache: false

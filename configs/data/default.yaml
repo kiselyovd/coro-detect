@@ -1,0 +1,3 @@
+csv_path: data/raw/data.csv
+target_col: target
+test_size: 0.2
