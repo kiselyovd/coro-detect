@@ -4,8 +4,6 @@ stages:
     deps:
       - data/raw
       - src/cardio_risk_rf/data/prepare.py
-    outs:
-      - data/processed
   train:
     cmd: python -m cardio_risk_rf.training.train
     deps:

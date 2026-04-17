@@ -1,27 +1,32 @@
-"""Data preparation stage."""
+"""CLI to produce data/processed/{train,val,test}.parquet from raw CSV."""
+
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
-from ..utils import get_logger
-
-log = get_logger(__name__)
+from .framingham import load_framingham, split_stratified
 
 
-def prepare_data(raw_dir: Path | str, processed_dir: Path | str) -> None:
-    """Transform raw data into processed form. Override per project."""
-    raw = Path(raw_dir)
-    out = Path(processed_dir)
+def main() -> None:
+    p = argparse.ArgumentParser()
+    p.add_argument("--raw", default="data/raw/framingham.csv")
+    p.add_argument("--out", default="data/processed")
+    p.add_argument("--seed", type=int, default=42)
+    args = p.parse_args()
+
+    df = load_framingham(args.raw)
+    train_df, val_df, test_df = split_stratified(df, seed=args.seed)
+
+    out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    log.info("prepare_data.start", raw=str(raw), out=str(out))
-    log.info("prepare_data.done")
+    train_df.to_parquet(out / "train.parquet", index=False)
+    val_df.to_parquet(out / "val.parquet", index=False)
+    test_df.to_parquet(out / "test.parquet", index=False)
+    print(
+        f"wrote train={len(train_df)} val={len(val_df)} test={len(test_df)} to {out}"
+    )
 
 
 if __name__ == "__main__":
-    import argparse
-
-    p = argparse.ArgumentParser()
-    p.add_argument("--raw", required=True)
-    p.add_argument("--out", required=True)
-    args = p.parse_args()
-    prepare_data(args.raw, args.out)
+    main()
