@@ -1,0 +1,20 @@
+name: test
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+      - name: Set up Python
+        run: uv python install ${{ matrix.python-version }}
+      - name: Sync deps
+        run: uv sync --all-groups --python ${{ matrix.python-version }}
+      - name: Run pytest
+        run: uv run pytest --cov=cardio_risk_rf --cov-report=xml --cov-fail-under=10
+      - uses: codecov/codecov-action@v5
