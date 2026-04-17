@@ -4,7 +4,7 @@ Production-grade tabular cardiovascular-risk classifier on the Framingham Heart 
 
 ## At a glance
 
-- **Dataset:** [Framingham Heart Study 10-Year CHD](https://www.kaggle.com/datasets/aasheesh200/framingham-heart-study-dataset) — 4240 patients × 16 features, ~15% positive rate on `TenYearCHD`, stratified 70/15/15 split.
+- **Dataset:** [sulianova Cardiovascular Disease Dataset](https://www.kaggle.com/datasets/sulianova/cardiovascular-disease-dataset) — 70 000 patients × 11 clinical features, balanced target `cardio` (~50/50), stratified 70/15/15 split. Framingham (4240 rows) kept as secondary benchmark cohort.
 - **Main model:** LightGBM with native NaN handling, tuned by Optuna (50 trials, TPE sampler, early stopping on val).
 - **Baseline:** RandomForest with `SimpleImputer(median)` + `GridSearchCV` — gives a calibration reference for the main model.
 - **Stack:** Python 3.12 / 3.13 · scikit-learn · LightGBM · Optuna · SHAP · FastAPI · Hydra · DVC · MkDocs Material · uv.

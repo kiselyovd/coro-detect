@@ -9,7 +9,7 @@ from pathlib import Path
 import joblib
 import pandas as pd
 
-from ..data.framingham import FEATURES, TARGET
+from ..data.cardio import FEATURES, TARGET
 from .metrics import compute_metrics
 
 

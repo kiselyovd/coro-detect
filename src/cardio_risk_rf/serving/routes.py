@@ -11,7 +11,7 @@ import joblib
 import pandas as pd
 from fastapi import APIRouter, HTTPException, Query
 
-from ..data.framingham import FEATURES
+from ..data.cardio import FEATURES
 from ..explain import explain_instance
 from .schemas import PatientFeatures, PredictionResponse
 

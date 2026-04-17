@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
 
-from cardio_risk_rf.data.framingham import FEATURES
+from cardio_risk_rf.data.cardio import FEATURES
 from cardio_risk_rf.models.factory import build_baseline, build_main
 
 

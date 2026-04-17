@@ -14,18 +14,18 @@
 
 ## Датасет
 
-[Framingham Heart Study 10-Year CHD Risk](https://www.kaggle.com/datasets/aasheesh200/framingham-heart-study-dataset). 4240 строк × 16 признаков, доля положительного класса `TenYearCHD` ~15%. Загружается через `scripts/sync_data.sh` с Kaggle, fallback — зеркало на HF Datasets. Разбиение 70/15/15 со стратификацией по таргету (`train=2967, val=636, test=637`).
+[sulianova Cardiovascular Disease Dataset](https://www.kaggle.com/datasets/sulianova/cardiovascular-disease-dataset). 70 000 строк × 11 клинических признаков, **сбалансированный** таргет `cardio` (50/50). Признаки: возраст, пол, рост/вес, систолическое/диастолическое АД, холестерин и глюкоза (ординальные 1-2-3), курение/алкоголь/активность. Загружается через `scripts/sync_data.sh` с Kaggle, fallback — зеркало HF Datasets. Разбиение 70/15/15 со стратификацией по таргету (`train=48999, val=10500, test=10501`). Исходный [Framingham Heart Study](https://www.kaggle.com/datasets/aasheesh200/framingham-heart-study-dataset) (4240 строк, 10-летний проспективный CHD) сохранён как вторичная когорта в `notebooks/02_benchmark.ipynb`.
 
 Исходный 49-строчный датасет от автора `coro-detect` заархивирован в `docs/legacy/original_dataset.csv` — обоснование см. в `docs/legacy/README.md`.
 
 ## Результаты
 
-| Модель | ROC-AUC | PR-AUC | F1 @ t\* | Brier | t\* |
-|---|---|---|---|---|---|
-| **LightGBM** (основная) | **66.2%** | 26.6% | 30.6% | 0.128 | 0.27 |
-| RandomForest (baseline) | 66.0% | **27.5%** | **32.2%** | 0.135 | 0.25 |
+| Модель | ROC-AUC | PR-AUC | F1 @ 0.5 | F1 @ t\* | Brier | t\* |
+|---|---|---|---|---|---|---|
+| **LightGBM** (основная) | **79.8%** | **78.1%** | 71.9% | **73.8%** | 0.182 | 0.33 |
+| RandomForest (baseline) | 79.5% | 77.9% | 70.8% | 73.2% | 0.184 | 0.41 |
 
-Метрики на отложенном test-сплите (n=637, доля положительных 15.2%, 10-летний риск CHD Framingham). F1 приведён при оптимальном по F1 пороге t\*, подобранном на val (дефолтный порог 0.5 — диктуется распределением классов и даёт F1≈0 для обеих моделей на несбалансированных данных). Calibration plot на val → `reports/calibration.png`; F1-оптимальные пороги в `reports/metrics_thresholded.json`.
+Метрики на отложенном test-сплите (n=10 501, сбалансированный таргет, sulianova Cardiovascular Disease Dataset). F1 указан при дефолтном пороге 0.5 и при F1-оптимальном пороге t\*, подобранном на val. Calibration plot на val → `reports/calibration.png`; F1-оптимальные пороги в `reports/metrics_thresholded.json`.
 
 ### Глобальный SHAP (основная модель)
 

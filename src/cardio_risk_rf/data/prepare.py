@@ -5,17 +5,17 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from .framingham import load_framingham, split_stratified
+from .cardio import load_cardio, split_stratified
 
 
 def main() -> None:
     p = argparse.ArgumentParser()
-    p.add_argument("--raw", default="data/raw/framingham.csv")
+    p.add_argument("--raw", default="data/raw/cardio.csv")
     p.add_argument("--out", default="data/processed")
     p.add_argument("--seed", type=int, default=42)
     args = p.parse_args()
 
-    df = load_framingham(args.raw)
+    df = load_cardio(args.raw)
     train_df, val_df, test_df = split_stratified(df, seed=args.seed)
 
     out = Path(args.out)

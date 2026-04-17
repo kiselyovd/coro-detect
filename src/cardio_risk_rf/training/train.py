@@ -12,7 +12,7 @@ from lightgbm import early_stopping
 from sklearn.metrics import average_precision_score
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 
-from ..data.framingham import FEATURES, TARGET
+from ..data.cardio import FEATURES, TARGET
 from ..models.factory import build_baseline, build_main
 from ..utils import get_logger
 

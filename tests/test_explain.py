@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from cardio_risk_rf.data.framingham import FEATURES
+from cardio_risk_rf.data.cardio import FEATURES
 from cardio_risk_rf.explain import explain_global, explain_instance
 from cardio_risk_rf.models.factory import build_main
 
@@ -15,7 +15,7 @@ from cardio_risk_rf.models.factory import build_main
 def _fit_toy():
     rng = np.random.default_rng(0)
     X = pd.DataFrame({f: rng.normal(size=200) for f in FEATURES})
-    y = (X["age"] + X["sysBP"] + rng.normal(size=200) > 0).astype(int)
+    y = (X["age"] + X["ap_hi"] + rng.normal(size=200) > 0).astype(int)
     model = build_main(scale_pos_weight=1.0, random_state=42)
     model.fit(X, y)
     return model, X

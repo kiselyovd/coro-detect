@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from cardio_risk_rf.data.framingham import FEATURES, TARGET
+from cardio_risk_rf.data.cardio import FEATURES, TARGET
 from cardio_risk_rf.evaluation.calibration import save_calibration_plot
 from cardio_risk_rf.evaluation.metrics import compute_metrics
 from cardio_risk_rf.evaluation.summary import build_summary

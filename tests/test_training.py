@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from cardio_risk_rf.data.framingham import FEATURES, TARGET
+from cardio_risk_rf.data.cardio import FEATURES, TARGET
 from cardio_risk_rf.training.train import train_baseline, train_main
 
 

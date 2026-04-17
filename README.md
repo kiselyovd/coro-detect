@@ -14,7 +14,7 @@ Production-grade tabular cardiovascular-risk classifier on the Framingham Heart 
 
 ## Dataset
 
-[Framingham Heart Study 10-Year CHD Risk](https://www.kaggle.com/datasets/aasheesh200/framingham-heart-study-dataset). 4240 rows × 16 features, ~15% positive rate on `TenYearCHD`. Fetched by `scripts/sync_data.sh` from Kaggle with an HF Datasets fallback mirror. Split 70/15/15 stratified by target (`train=2967, val=636, test=637`).
+[sulianova Cardiovascular Disease Dataset](https://www.kaggle.com/datasets/sulianova/cardiovascular-disease-dataset). 70 000 rows × 11 clinical features, **balanced** target `cardio` (50/50). Features: age, gender, height/weight, systolic/diastolic BP, cholesterol & glucose (ordinal 1-2-3), smoking/alcohol/activity. Fetched by `scripts/sync_data.sh` from Kaggle with an HF Datasets fallback mirror. Split 70/15/15 stratified by target (`train=48999, val=10500, test=10501`). The original [Framingham Heart Study](https://www.kaggle.com/datasets/aasheesh200/framingham-heart-study-dataset) (4240 rows, 10-year prospective CHD target) is kept as a secondary cohort in `notebooks/02_benchmark.ipynb`.
 
 The original 49-row dataset from the `coro-detect` author is archived at `docs/legacy/original_dataset.csv` — see `docs/legacy/README.md` for rationale.
 
@@ -22,12 +22,12 @@ The original 49-row dataset from the `coro-detect` author is archived at `docs/l
 
 Filled in from `reports/metrics_summary.json` once the v0.1.0 run completes.
 
-| Model | ROC-AUC | PR-AUC | F1 @ t\* | Brier | t\* |
-|---|---|---|---|---|---|
-| **LightGBM** (main) | **66.2%** | 26.6% | 30.6% | 0.128 | 0.27 |
-| RandomForest (baseline) | 66.0% | **27.5%** | **32.2%** | 0.135 | 0.25 |
+| Model | ROC-AUC | PR-AUC | F1 @ 0.5 | F1 @ t\* | Brier | t\* |
+|---|---|---|---|---|---|---|
+| **LightGBM** (main) | **79.8%** | **78.1%** | 71.9% | **73.8%** | 0.182 | 0.33 |
+| RandomForest (baseline) | 79.5% | 77.9% | 70.8% | 73.2% | 0.184 | 0.41 |
 
-Metrics on held-out test split (n=637, positive rate 15.2%, Framingham 10-year CHD). F1 reported at the validation-set optimal threshold t\* (defaults to 0.5 = class-prior-driven and yields F1≈0 for both models on imbalanced data). Calibration plot on val → `reports/calibration.png`; F1-optimal thresholds saved to `reports/metrics_thresholded.json`.
+Metrics on held-out test split (n=10 501, balanced target, sulianova Cardiovascular Disease Dataset). F1 reported at both the default 0.5 threshold and at the validation-set optimal threshold t\*. Calibration plot on val → `reports/calibration.png`; F1-optimal thresholds saved to `reports/metrics_thresholded.json`.
 
 ### Global SHAP (main model)
 

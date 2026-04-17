@@ -1,17 +1,13 @@
 {
-  "male": 0.0,
-  "age": 63.0,
-  "education": 2.0,
-  "currentSmoker": 0.0,
-  "cigsPerDay": 0.0,
-  "BPMeds": 0.0,
-  "prevalentStroke": 0.0,
-  "prevalentHyp": 1.0,
-  "diabetes": 0.0,
-  "totChol": 250.0,
-  "sysBP": 190.0,
-  "diaBP": 88.0,
-  "BMI": 24.16,
-  "heartRate": 94.0,
-  "glucose": 118.0
+  "age": 56.0,
+  "gender": 1.0,
+  "height": 152.0,
+  "weight": 72.0,
+  "ap_hi": 160.0,
+  "ap_lo": 90.0,
+  "cholesterol": 3.0,
+  "gluc": 1.0,
+  "smoke": 0.0,
+  "alco": 0.0,
+  "active": 1.0
 }
