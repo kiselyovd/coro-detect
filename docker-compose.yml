@@ -1,22 +1,18 @@
 services:
-api:
+  api:
     build:
       context: .
-      target: serving
-    image: cardio-risk-rf-serving:local
+    image: cardio-risk-rf:dev
     ports:
       - "8000:8000"
-    volumes:
-      - ./artifacts:/models:ro
-    environment:
-      MODEL_PATH: /models/best.ckpt
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
       interval: 30s
       timeout: 5s
       retries: 3
-mlflow:
+
+  mlflow:
     image: ghcr.io/mlflow/mlflow:v2.11.3
     ports:
       - "5000:5000"
