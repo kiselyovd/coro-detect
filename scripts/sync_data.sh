@@ -26,7 +26,7 @@ if command -v kaggle >/dev/null 2>&1 && [[ -f "${HOME}/.kaggle/kaggle.json" ]]; 
 fi
 
 echo "[sync_data] Kaggle path unavailable, trying HF Datasets mirror..."
-python - <<'PY'
+uv run python - <<'PY'
 import os, pathlib
 from huggingface_hub import hf_hub_download
 root = pathlib.Path(os.environ.get("CARDIO_REPO_ROOT") or ".").resolve()

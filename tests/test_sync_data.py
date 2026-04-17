@@ -4,9 +4,16 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 from pathlib import Path
 
+import pytest
 
+
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="bash path-interop on Windows makes subprocess(['bash', ...]) unreliable; CI runs on Linux.",
+)
 def test_sync_data_idempotent_when_csv_already_present(tmp_path: Path, monkeypatch) -> None:
     work = tmp_path / "repo"
     (work / "data" / "raw").mkdir(parents=True)
