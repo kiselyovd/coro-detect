@@ -531,22 +531,29 @@
 <h1 id="architecture">Architecture</h1>
 <p>Two independent <code>sklearn.Pipeline</code> artefacts sharing the same <code>{prob, class, shap_top5}</code> contract.</p>
 <pre class="mermaid"><code>flowchart LR
-  CSV[Framingham CSV] --&gt; Prep[prepare.py 70/15/15 stratified]
-  Prep --&gt; Train[train.parquet]
-  Prep --&gt; Val[val.parquet]
-  Prep --&gt; Test[test.parquet]
-  Train --&gt; LGBM[LightGBM + Optuna 50]
-  Train --&gt; RF[RandomForest + GridSearchCV]
+  CSV[Framingham CSV]:::external --&gt; Prep[prepare.py&lt;br/&gt;70/15/15 stratified]:::code
+  Prep --&gt; Train[train.parquet]:::data
+  Prep --&gt; Val[val.parquet]:::data
+  Prep --&gt; Test[test.parquet]:::data
+  Train --&gt; LGBM[LightGBM&lt;br/&gt;+ Optuna 50]:::model
+  Train --&gt; RF[RandomForest&lt;br/&gt;+ GridSearchCV]:::model
   Val --&gt; LGBM
-  Val --&gt; Calib[Calibration plot]
-  LGBM --&gt; MainArt[artifacts/main/*.joblib]
-  RF --&gt; BaseArt[artifacts/baseline/*.joblib]
-  MainArt --&gt; API[FastAPI /predict]
+  Val --&gt; Calib[Calibration plot]:::artifact
+  LGBM --&gt; MainArt[artifacts/main/*.joblib]:::artifact
+  RF --&gt; BaseArt[artifacts/baseline/*.joblib]:::artifact
+  MainArt --&gt; API[FastAPI /predict]:::serve
   BaseArt --&gt; API
-  MainArt --&gt; SHAP[Global SHAP → reports/*]
-  Test --&gt; Score[compute_metrics]
+  MainArt --&gt; SHAP[Global SHAP&lt;br/&gt;reports/*]:::serve
+  Test --&gt; Score[compute_metrics]:::code
   MainArt --&gt; Score
-  BaseArt --&gt; Score</code></pre>
+  BaseArt --&gt; Score
+
+  classDef external fill:#FFEBEE,stroke:#E53935,color:#B71C1C
+  classDef data fill:#FFCDD2,stroke:#E53935,color:#B71C1C
+  classDef code fill:#EF9A9A,stroke:#C62828,color:#B71C1C
+  classDef model fill:#EF5350,stroke:#B71C1C,color:#fff
+  classDef artifact fill:#E53935,stroke:#B71C1C,color:#fff
+  classDef serve fill:#C62828,stroke:#B71C1C,color:#fff</code></pre>
 <p>Key design decisions:
 - Main model uses <strong>LightGBM native NaN handling</strong> — no imputer in its pipeline. Missing values at inference (including <code>/predict</code>) are forwarded as-is.
 - Baseline uses <code>SimpleImputer(strategy="median")</code> because RandomForest cannot split on NaN. No <code>StandardScaler</code> (tree models are scale-invariant).
