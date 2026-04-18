@@ -8,21 +8,26 @@ Auto-generated reference for the `cardio_risk_rf` package via [mkdocstrings](htt
 
 ## Data
 
+::: cardio_risk_rf.data.cardio
+::: cardio_risk_rf.data.dataset
 ::: cardio_risk_rf.data.framingham
-
 ::: cardio_risk_rf.data.prepare
 
 ## Models
 
-::: cardio_risk_rf.models
+::: cardio_risk_rf.models.factory
+::: cardio_risk_rf.models.sklearn_pipeline
 
 ## Training
 
-::: cardio_risk_rf.training
+::: cardio_risk_rf.training.train
 
 ## Evaluation
 
-::: cardio_risk_rf.evaluation
+::: cardio_risk_rf.evaluation.calibration
+::: cardio_risk_rf.evaluation.evaluate
+::: cardio_risk_rf.evaluation.metrics
+::: cardio_risk_rf.evaluation.summary
 
 ## Inference
 
@@ -34,12 +39,14 @@ Auto-generated reference for the `cardio_risk_rf` package via [mkdocstrings](htt
 
 ## Serving
 
-::: cardio_risk_rf.serving.schemas
-
-::: cardio_risk_rf.serving.routes
-
+::: cardio_risk_rf.serving.dependencies
+::: cardio_risk_rf.serving.errors
 ::: cardio_risk_rf.serving.main
+::: cardio_risk_rf.serving.routes
+::: cardio_risk_rf.serving.schemas
 
 ## Utilities
 
-::: cardio_risk_rf.utils
+::: cardio_risk_rf.utils.hf_hub
+::: cardio_risk_rf.utils.logging
+::: cardio_risk_rf.utils.seed
