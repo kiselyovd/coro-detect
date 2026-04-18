@@ -12,7 +12,7 @@ jobs:
       - run: uv run --all-groups ruff format --check .
       - run: uv run --all-groups mypy src scripts
       - run: uv run --all-groups deptry .
-      - run: uv run --all-groups bandit -r src
+      - run: uv run --all-groups bandit -r src -c pyproject.toml
       - run: uv run --all-groups interrogate src --fail-under 30
       - uses: reviewdog/action-actionlint@v1
         with:
