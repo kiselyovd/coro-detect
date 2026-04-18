@@ -1,10 +1,11 @@
 # cardio-risk-rf
 
-[![CI](https://img.shields.io/github/actions/workflow/status/kiselyovd/cardio-risk-rf/test.yml?branch=main&style=for-the-badge&label=ci)](https://github.com/kiselyovd/cardio-risk-rf/actions)
-[![codecov](https://img.shields.io/codecov/c/github/kiselyovd/cardio-risk-rf?style=for-the-badge&logo=codecov&logoColor=white)](https://codecov.io/gh/kiselyovd/cardio-risk-rf)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/kiselyovd/cardio-risk-rf/test.yml?branch=main&style=for-the-badge&label=CI&logo=github)](https://github.com/kiselyovd/cardio-risk-rf/actions/workflows/test.yml)
+[![Docs](https://img.shields.io/badge/docs-mkdocs-526CFE?style=for-the-badge&logo=materialformkdocs&logoColor=white)](https://kiselyovd.github.io/cardio-risk-rf/)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/kiselyovd/cardio-risk-rf/badges/coverage.json&style=for-the-badge&logo=pytest&logoColor=white)](https://github.com/kiselyovd/cardio-risk-rf/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%20%7C%203.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![HF Model](https://img.shields.io/badge/🤗%20HF%20Hub-model-FFD21E?style=for-the-badge)](https://huggingface.co/kiselyovd/cardio-risk-rf)
+[![HF Hub](https://img.shields.io/badge/HF%20Hub-model-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/kiselyovd/cardio-risk-rf)
 
 Промышленный табличный классификатор сердечно-сосудистого риска на Framingham Heart Study (4240 пациентов, 10-летний риск CHD). Основная модель — **LightGBM** с нативной обработкой NaN и объяснимостью через SHAP; baseline — **RandomForest** с медианной импутацией. Конфигурация через Hydra, подбор гиперпараметров через Optuna, метрики ROC-AUC / PR-AUC / F1 / Brier + calibration plot, сервинг через FastAPI (`/predict` с локальным SHAP top-5), дистрибуция через Hugging Face Hub и MkDocs Material.
 
