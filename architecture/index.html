@@ -530,7 +530,7 @@
 
 <h1 id="architecture">Architecture</h1>
 <p>Two independent <code>sklearn.Pipeline</code> artefacts sharing the same <code>{prob, class, shap_top5}</code> contract.</p>
-<div class="highlight"><pre><span></span><code>flowchart LR
+<pre class="mermaid"><code>flowchart LR
   CSV[Framingham CSV] --&gt; Prep[prepare.py 70/15/15 stratified]
   Prep --&gt; Train[train.parquet]
   Prep --&gt; Val[val.parquet]
@@ -546,8 +546,7 @@
   MainArt --&gt; SHAP[Global SHAP → reports/*]
   Test --&gt; Score[compute_metrics]
   MainArt --&gt; Score
-  BaseArt --&gt; Score
-</code></pre></div>
+  BaseArt --&gt; Score</code></pre>
 <p>Key design decisions:
 - Main model uses <strong>LightGBM native NaN handling</strong> — no imputer in its pipeline. Missing values at inference (including <code>/predict</code>) are forwarded as-is.
 - Baseline uses <code>SimpleImputer(strategy="median")</code> because RandomForest cannot split on NaN. No <code>StandardScaler</code> (tree models are scale-invariant).
