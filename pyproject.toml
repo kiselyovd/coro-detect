@@ -93,7 +93,14 @@ module = ["lightgbm.*", "shap.*", "optuna.*", "sklearn.*", "joblib.*", "matplotl
 ignore_missing_imports = true
 
 [tool.deptry]
-ignore = ["DEP004"]
+# DEP001: torch is an optional import in template-inherited utils/seed.py only
+# DEP002: hydra-core/omegaconf/pyyaml/rich referenced indirectly via Hydra configs;
+#         pyarrow used transparently by pandas Parquet IO; kaggle shelled out via sync_data.sh
+# DEP003: cardio_risk_rf imported by its own scripts+notebooks, not a transitive dep
+# DEP004: optional dependency groups (serving, tracking, docs) are intentional
+ignore = ["DEP001", "DEP002", "DEP003", "DEP004"]
+extend_exclude = ["notebooks"]
+known_first_party = ["cardio_risk_rf"]
 
 [tool.bandit]
 skips = ["B101", "B311"]
