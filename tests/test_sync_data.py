@@ -17,7 +17,7 @@ import pytest
 def test_sync_data_idempotent_when_csv_already_present(tmp_path: Path, monkeypatch) -> None:
     work = tmp_path / "repo"
     (work / "data" / "raw").mkdir(parents=True)
-    target = work / "data" / "raw" / "framingham.csv"
+    target = work / "data" / "raw" / "cardio.csv"
     target.write_text("dummy,header\n1,2\n", encoding="utf-8")
 
     script = Path(__file__).resolve().parents[1] / "scripts" / "sync_data.sh"
