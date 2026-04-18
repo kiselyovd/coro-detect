@@ -103,7 +103,10 @@ extend_exclude = ["notebooks"]
 known_first_party = ["cardio_risk_rf"]
 
 [tool.bandit]
-skips = ["B101", "B311"]
+# B101: asserts in tests, B311: non-crypto random for demo samples,
+# B615: HF snapshot_download revision pin is a user-supplied arg, not static;
+#       template-inherited utility used by end-users with their own HF pins.
+skips = ["B101", "B311", "B615"]
 
 [tool.interrogate]
 fail-under = 30
