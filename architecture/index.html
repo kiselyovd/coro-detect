@@ -535,7 +535,31 @@
 
 
 <h1 id="architecture">Architecture</h1>
-<p>Describe the data flow, model choice, and key design decisions.</p>
+<p>Two independent <code>sklearn.Pipeline</code> artefacts sharing the same <code>{prob, class, shap_top5}</code> contract.</p>
+<div class="highlight"><pre><span></span><code>flowchart LR
+  CSV[Framingham CSV] --&gt; Prep[prepare.py 70/15/15 stratified]
+  Prep --&gt; Train[train.parquet]
+  Prep --&gt; Val[val.parquet]
+  Prep --&gt; Test[test.parquet]
+  Train --&gt; LGBM[LightGBM + Optuna 50]
+  Train --&gt; RF[RandomForest + GridSearchCV]
+  Val --&gt; LGBM
+  Val --&gt; Calib[Calibration plot]
+  LGBM --&gt; MainArt[artifacts/main/*.joblib]
+  RF --&gt; BaseArt[artifacts/baseline/*.joblib]
+  MainArt --&gt; API[FastAPI /predict]
+  BaseArt --&gt; API
+  MainArt --&gt; SHAP[Global SHAP → reports/*]
+  Test --&gt; Score[compute_metrics]
+  MainArt --&gt; Score
+  BaseArt --&gt; Score
+</code></pre></div>
+<p>Key design decisions:
+- Main model uses <strong>LightGBM native NaN handling</strong> — no imputer in its pipeline. Missing values at inference (including <code>/predict</code>) are forwarded as-is.
+- Baseline uses <code>SimpleImputer(strategy="median")</code> because RandomForest cannot split on NaN. No <code>StandardScaler</code> (tree models are scale-invariant).
+- Class imbalance handled by <code>scale_pos_weight = N_neg / N_pos</code> (LGBM) and <code>class_weight="balanced"</code> (RF).
+- Hyperparameter search: Optuna 50 trials for LGBM (TPE sampler, seed=42, early-stopping on val), GridSearchCV short grid for RF.
+- Final metric table uses <strong>test set only</strong>; calibration plot uses <strong>val</strong> to avoid test-set contamination.</p>
 
 
 
