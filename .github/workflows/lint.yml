@@ -8,13 +8,13 @@ jobs:
       - uses: astral-sh/setup-uv@v4
       - run: uv python install 3.13
       - run: uv sync --all-groups
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-      - run: uv run mypy src scripts
-      - run: uv run deptry .
-      - run: uv run bandit -r src
-      - run: uv run interrogate src --fail-under 30
+      - run: uv run --all-groups ruff check .
+      - run: uv run --all-groups ruff format --check .
+      - run: uv run --all-groups mypy src scripts
+      - run: uv run --all-groups deptry .
+      - run: uv run --all-groups bandit -r src
+      - run: uv run --all-groups interrogate src --fail-under 30
       - uses: reviewdog/action-actionlint@v1
         with:
           fail_level: error
-      - run: uv run codespell
+      - run: uv run --all-groups codespell
