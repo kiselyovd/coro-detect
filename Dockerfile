@@ -27,7 +27,10 @@ WORKDIR /app
 COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 COPY src /app/src
-COPY artifacts /app/artifacts
+# artifacts/ is .gitignore'd (joblibs are too large to bake in).
+# At runtime: mount -v /host/artifacts:/app/artifacts  OR  pull from
+# huggingface.co/kiselyovd/cardio-risk-rf via a start-up script.
+RUN mkdir -p /app/artifacts/main /app/artifacts/baseline
 COPY data/widget /app/data/widget
 ENV PYTHONPATH=/app/src
 EXPOSE 8000
