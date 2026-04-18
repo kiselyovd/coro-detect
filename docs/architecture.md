@@ -4,22 +4,29 @@ Two independent `sklearn.Pipeline` artefacts sharing the same `{prob, class, sha
 
 ```mermaid
 flowchart LR
-  CSV[Framingham CSV] --> Prep[prepare.py 70/15/15 stratified]
-  Prep --> Train[train.parquet]
-  Prep --> Val[val.parquet]
-  Prep --> Test[test.parquet]
-  Train --> LGBM[LightGBM + Optuna 50]
-  Train --> RF[RandomForest + GridSearchCV]
+  CSV[Framingham CSV]:::external --> Prep[prepare.py<br/>70/15/15 stratified]:::code
+  Prep --> Train[train.parquet]:::data
+  Prep --> Val[val.parquet]:::data
+  Prep --> Test[test.parquet]:::data
+  Train --> LGBM[LightGBM<br/>+ Optuna 50]:::model
+  Train --> RF[RandomForest<br/>+ GridSearchCV]:::model
   Val --> LGBM
-  Val --> Calib[Calibration plot]
-  LGBM --> MainArt[artifacts/main/*.joblib]
-  RF --> BaseArt[artifacts/baseline/*.joblib]
-  MainArt --> API[FastAPI /predict]
+  Val --> Calib[Calibration plot]:::artifact
+  LGBM --> MainArt[artifacts/main/*.joblib]:::artifact
+  RF --> BaseArt[artifacts/baseline/*.joblib]:::artifact
+  MainArt --> API[FastAPI /predict]:::serve
   BaseArt --> API
-  MainArt --> SHAP[Global SHAP → reports/*]
-  Test --> Score[compute_metrics]
+  MainArt --> SHAP[Global SHAP<br/>reports/*]:::serve
+  Test --> Score[compute_metrics]:::code
   MainArt --> Score
   BaseArt --> Score
+
+  classDef external fill:#FFEBEE,stroke:#E53935,color:#B71C1C
+  classDef data fill:#FFCDD2,stroke:#E53935,color:#B71C1C
+  classDef code fill:#EF9A9A,stroke:#C62828,color:#B71C1C
+  classDef model fill:#EF5350,stroke:#B71C1C,color:#fff
+  classDef artifact fill:#E53935,stroke:#B71C1C,color:#fff
+  classDef serve fill:#C62828,stroke:#B71C1C,color:#fff
 ```
 
 Key design decisions:
