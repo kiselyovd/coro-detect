@@ -73,6 +73,15 @@ def _widget_payload(widget_path: Path) -> str:
     return json.dumps(data, separators=(", ", ": "))
 
 
+def _widget_structured(widget_path: Path) -> str:
+    """Wrap each field value in a single-element list for HF tabular widget."""
+    if not widget_path.exists():
+        return "{}"
+    data = json.loads(widget_path.read_text(encoding="utf-8"))
+    wrapped = {k: [v] for k, v in data.items()}
+    return json.dumps(wrapped, separators=(", ", ": "))
+
+
 def render_model_card(
     template_path: Path,
     out_path: Path,
@@ -129,10 +138,12 @@ def main() -> None:
         summary = json.loads(metrics_path.read_text(encoding="utf-8"))
 
     widget_payload = _widget_payload(Path(args.widget_payload))
+    widget_structured = _widget_structured(Path(args.widget_payload))
     test_size = summary.get("test_size", "TBD")
     template_ctx = {
         "repo_id": args.repo_id,
         "widget_payload": widget_payload,
+        "widget_structured": widget_structured,
         "main_metrics": _main_metrics_from(summary),
         "test_size": test_size,
         "metrics_table": _format_metrics_table(summary),
