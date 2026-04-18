@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with: {fetch-depth: 0}
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v7
       - run: uv python install 3.13
       - run: uv sync --all-groups
       - run: uv run --all-groups mkdocs gh-deploy --force
