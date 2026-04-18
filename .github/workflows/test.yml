@@ -17,4 +17,4 @@ jobs:
         run: uv sync --all-groups --python ${{ matrix.python-version }}
       - name: Run pytest
         run: uv run --all-groups --python ${{ matrix.python-version }} pytest --cov=cardio_risk_rf --cov-report=xml --cov-fail-under=10
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v6
