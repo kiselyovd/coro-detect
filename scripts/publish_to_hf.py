@@ -16,6 +16,7 @@ import json
 import os
 import tempfile
 from pathlib import Path
+from typing import Any
 
 from huggingface_hub import HfApi
 from jinja2 import Environment, FileSystemLoader
@@ -28,7 +29,7 @@ MODEL_FILES: tuple[str, ...] = ("cardio_risk_lgbm.joblib", "cardio_risk_rf.jobli
 # ---------------------------------------------------------------------------
 
 
-def _format_metrics_table(summary: dict) -> str:
+def _format_metrics_table(summary: dict[str, Any]) -> str:
     """Render a Markdown table from the evaluation summary JSON.
 
     Falls back to ``TBD`` when the summary is empty (Task 18 will
@@ -43,7 +44,7 @@ def _format_metrics_table(summary: dict) -> str:
     return "| Metric | Value |\n|---|---|\n" + "\n".join(rows)
 
 
-def _main_metrics_from(summary: dict) -> list[dict]:
+def _main_metrics_from(summary: dict[str, Any]) -> list[dict[str, Any]]:
     """Build the ``model-index`` metrics entries from the summary.
 
     Returns an empty list when metrics are unavailable so the Jinja2
@@ -58,7 +59,7 @@ def _main_metrics_from(summary: dict) -> list[dict]:
         "main_f1": "f1",
         "main_brier": "brier",
     }
-    out: list[dict] = []
+    out: list[dict[str, Any]] = []
     for key, metric_type in mapping.items():
         if key in summary:
             out.append({"type": metric_type, "value": summary[key]})
@@ -85,7 +86,7 @@ def _widget_structured(widget_path: Path) -> str:
 def render_model_card(
     template_path: Path,
     out_path: Path,
-    **context,
+    **context: Any,
 ) -> None:
     """Render the Jinja2 model-card template to disk.
 
@@ -132,7 +133,7 @@ def main() -> None:
     args = parser.parse_args()
 
     artifacts_dir = Path(args.artifacts)
-    summary: dict = {}
+    summary: dict[str, Any] = {}
     metrics_path = Path(args.metrics)
     if metrics_path.exists():
         summary = json.loads(metrics_path.read_text(encoding="utf-8"))

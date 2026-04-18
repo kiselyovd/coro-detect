@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -31,12 +32,13 @@ def main() -> None:
     print("wrote data/sample and data/widget")
 
 
-def _clean(v):
+def _clean(v: Any) -> Any:
+    """Coerce numpy scalars to plain Python types for JSON serialization."""
     import numpy as np
 
-    if isinstance(v, (np.integer,)):
+    if isinstance(v, np.integer):
         return int(v)
-    if isinstance(v, (np.floating,)):
+    if isinstance(v, np.floating):
         return float(v)
     return v
 
